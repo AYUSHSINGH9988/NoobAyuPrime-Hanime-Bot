@@ -2,5 +2,6 @@ pyrogram
 tgcrypto
 yt-dlp
 cloudscraper
+brotli
 beautifulsoup4
 requests
