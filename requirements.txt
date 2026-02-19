@@ -1,0 +1,6 @@
+pyrogram
+tgcrypto
+yt-dlp
+cloudscraper
+beautifulsoup4
+requests
