@@ -6,3 +6,4 @@ cloudscraper
 brotli
 beautifulsoup4
 requests
+curl_cffi
