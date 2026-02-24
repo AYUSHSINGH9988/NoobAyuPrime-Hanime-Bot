@@ -1,9 +1,6 @@
-aiohttp
 pyrogram
 tgcrypto
-yt-dlp
-cloudscraper
-brotli
-beautifulsoup4
 requests
-curl_cffi
+yt-dlp
+hanime-plugin
+flask
