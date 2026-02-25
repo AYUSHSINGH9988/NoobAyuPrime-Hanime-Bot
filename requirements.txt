@@ -3,4 +3,5 @@ pyrogram
 tgcrypto
 requests
 yt-dlp
+motor
 hanime-plugin
