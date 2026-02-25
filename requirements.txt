@@ -4,3 +4,4 @@ tgcrypto
 requests
 yt-dlp
 hanime-plugin
+motor
