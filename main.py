@@ -27,7 +27,7 @@ def run_web():
 # ==========================================
 API_ID = 33675350
 API_HASH = "2f97c845b067a750c9f36fec497acf97"
-BOT_TOKEN = "8354139629:AAFXeLAl1kui4rdlMtKJkONHYlFttBDfh6w"
+BOT_TOKEN = "8798570619:AAE0Bz4umU7JMDn61AcssHwntSRyjNjzu-Q"
 
 app = Client("universal_extractor_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
