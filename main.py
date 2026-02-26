@@ -54,7 +54,7 @@ app = Client("universal_extractor_bot", api_id=API_ID, api_hash=API_HASH, bot_to
 SUPPORTED_SITES = ["hanime.tv", "hstream.moe", "oppai.stream", "hentaihaven.com", "ohentai.org", "hentaimama.io"]
 
 # 👇 MONGODB LAZY LOADING FIX 👇
-MONGO_URL = "mongodb+srv://salonisingh6265_db_user:U50ONNZZFUbh0iQI@cluster0.41mb27f.mongodb.net/?appName=Cluster0"
+MONGO_URL = "mongodb+srv://gauravsingh576466_db_user:mOuhQVApEQVMpeYr@cluster0.d94qqiv.mongodb.net/BotDatabase?retryWrites=true&w=majority&appName=Cluster0"
 mongo_client = None
 file_cache = None
 
