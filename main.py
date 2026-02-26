@@ -332,35 +332,40 @@ async def handle_batch(client, message: Message):
         url = urls[0]
         
         # 🌟 SCENARIO 1: HANIME CUSTOM PLAYLISTS & CHANNELS 🌟
-        # Agar link me playlist_id, channels ya playlists hai, toh poori list nikalega
+        # Agar link me playlist_id, channels ya playlists hai, toh Smart Scraper use hoga!
         if "hanime.tv" in url and ("playlist_id=" in url or "/channels/" in url or "/playlists/" in url):
-            await status.edit_text("⏳ **Scanning Custom Playlist/Channel via yt-dlp...** 🕵️‍♂️")
-            cmd = f'yt-dlp -j --flat-playlist "{url}"'
-            proc = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE)
-            stdout, _ = await proc.communicate()
-            lines = stdout.decode('utf-8').strip().split('\n')
+            await status.edit_text("⏳ **Bypassing yt-dlp... Smart Scanning Playlist/Channel...** 🕵️‍♂️")
             
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+            r = requests.get(url, headers=headers)
+            
+            # 🧠 SMART HTML SCRAPER: Website ke code se direct links nikalna
+            hrefs = re.findall(r'/videos/hentai/([a-z0-9\-]+)', r.text)
+            state_slugs = re.findall(r'{"id":\d+,"name":"([^"]+)","slug":"([a-z0-9\-]+)"', r.text)
+            
+            slug_dict = {}
+            for h in hrefs: slug_dict[h] = h.replace('-', ' ').title()
+            for name, slug in state_slugs: slug_dict[slug] = name
+                
             groups_dict = {}
-            for line in lines:
-                if not line.strip(): continue
-                try:
-                    data = json.loads(line)
-                    ep_url = data.get('url') or data.get('webpage_url')
-                    title = data.get('title', 'Unknown')
-                    if ep_url:
-                        slug = ep_url.split('/hentai/')[-1].split('?')[0]
-                        base_match = re.match(r'^(.*?)(?:-\d+)?$', slug)
-                        base_slug = base_match.group(1) if base_match else slug
-                        
-                        if base_slug not in groups_dict:
-                            clean_title = re.sub(r'\s*\d+$', '', title).strip()
-                            groups_dict[base_slug] = {'title': clean_title, 'episodes': []}
-                        groups_dict[base_slug]['episodes'].append({'url': ep_url, 'title': title})
-                except: pass
-            
+            for slug, title in slug_dict.items():
+                if len(slug) < 4: continue
+                ep_url = f"https://hanime.tv/videos/hentai/{slug}"
+                base_match = re.match(r'^(.*?)(?:-\d+)?$', slug)
+                base_slug = base_match.group(1) if base_match else slug
+                
+                if base_slug not in groups_dict:
+                    clean_title = re.sub(r'\s*\d+$', '', title).strip()
+                    groups_dict[base_slug] = {'title': clean_title, 'episodes': []}
+                    
+                # Duplicate episodes ko hatane ke liye check
+                if not any(e['url'] == ep_url for e in groups_dict[base_slug]['episodes']):
+                    groups_dict[base_slug]['episodes'].append({'url': ep_url, 'title': title})
+
             groups_list = list(groups_dict.values())
+            
             if groups_list:
-                if len(groups_list) > 60: groups_list = groups_list[:60] # Crash se bachane ke liye limit
+                if len(groups_list) > 60: groups_list = groups_list[:60] # Crash prevention
                 task_id = str(uuid.uuid4())[:8]
                 PENDING_TASKS[task_id] = {
                     "type": "playlist_selection", "site": "generic", 
