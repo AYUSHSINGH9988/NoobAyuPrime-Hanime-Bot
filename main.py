@@ -317,7 +317,7 @@ async def handle_message(client, message: Message):
         await status.edit_text(f"🎬 **{title[:50]}...**\n\n✅ Link Supported! Kaunsi Quality chahiye? 👇", reply_markup=get_quality_keyboard(task_id, qualities))
     else: await status.edit_text("❌ **Extraction Failed.**")
 
-# 🌟 ULTIMATE SMART BATCH COMMAND 🌟
+# 🌟 ULTIMATE SMART BATCH COMMAND (WITH NUXT SCRAPER) 🌟
 @app.on_message(filters.command("batch"))
 async def handle_batch(client, message: Message):
     raw_text = message.text.replace("/batch", "").strip()
@@ -332,24 +332,21 @@ async def handle_batch(client, message: Message):
         url = urls[0]
         
         # 🌟 SCENARIO 1: HANIME CUSTOM PLAYLISTS & CHANNELS 🌟
-        # Agar link me playlist_id, channels ya playlists hai, toh Smart Scraper use hoga!
         if "hanime.tv" in url and ("playlist_id=" in url or "/channels/" in url or "/playlists/" in url):
-            await status.edit_text("⏳ **Bypassing yt-dlp... Smart Scanning Playlist/Channel...** 🕵️‍♂️")
+            await status.edit_text("⏳ **Bypassing Plugin... Deep Scanning Website Data...** 🕵️‍♂️")
             
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/114.0.0.0 Safari/537.36'}
             r = requests.get(url, headers=headers)
             
-            # 🧠 SMART HTML SCRAPER: Website ke code se direct links nikalna
-            hrefs = re.findall(r'/videos/hentai/([a-z0-9\-]+)', r.text)
-            state_slugs = re.findall(r'{"id":\d+,"name":"([^"]+)","slug":"([a-z0-9\-]+)"', r.text)
-            
-            slug_dict = {}
-            for h in hrefs: slug_dict[h] = h.replace('-', ' ').title()
-            for name, slug in state_slugs: slug_dict[slug] = name
-                
+            # 🧠 THE NUXT HACK: Extracting hidden name and slug pairs from raw HTML
             groups_dict = {}
-            for slug, title in slug_dict.items():
-                if len(slug) < 4: continue
+            matches = re.findall(r'"name":"([^"]+)"\s*,\s*"slug":"([a-z0-9\-]+)"', r.text)
+            
+            for title, slug in matches:
+                # Filter out obvious tags/brands (Video slugs usually have hyphens or numbers)
+                if len(slug) < 4 or ("-" not in slug and not any(char.isdigit() for char in slug)): 
+                    continue
+                    
                 ep_url = f"https://hanime.tv/videos/hentai/{slug}"
                 base_match = re.match(r'^(.*?)(?:-\d+)?$', slug)
                 base_slug = base_match.group(1) if base_match else slug
@@ -358,14 +355,13 @@ async def handle_batch(client, message: Message):
                     clean_title = re.sub(r'\s*\d+$', '', title).strip()
                     groups_dict[base_slug] = {'title': clean_title, 'episodes': []}
                     
-                # Duplicate episodes ko hatane ke liye check
                 if not any(e['url'] == ep_url for e in groups_dict[base_slug]['episodes']):
                     groups_dict[base_slug]['episodes'].append({'url': ep_url, 'title': title})
 
             groups_list = list(groups_dict.values())
             
             if groups_list:
-                if len(groups_list) > 60: groups_list = groups_list[:60] # Crash prevention
+                if len(groups_list) > 60: groups_list = groups_list[:60] # UI limit to prevent Telegram crash
                 task_id = str(uuid.uuid4())[:8]
                 PENDING_TASKS[task_id] = {
                     "type": "playlist_selection", "site": "generic", 
@@ -373,7 +369,7 @@ async def handle_batch(client, message: Message):
                 }
                 await render_playlist_keyboard(status, task_id)
             else:
-                await status.edit_text("❌ **No videos found in this Playlist/Channel.**")
+                await status.edit_text("❌ **No videos found in this Playlist/Channel.**\n(Shayad ye private hai ya galat link hai).")
             return
 
         # 🌟 SCENARIO 2: NORMAL HANIME NATIVE SERIES 🌟
