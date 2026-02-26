@@ -317,7 +317,7 @@ async def handle_message(client, message: Message):
         await status.edit_text(f"🎬 **{title[:50]}...**\n\n✅ Link Supported! Kaunsi Quality chahiye? 👇", reply_markup=get_quality_keyboard(task_id, qualities))
     else: await status.edit_text("❌ **Extraction Failed.**")
 
-# 🌟 ULTIMATE SMART BATCH COMMAND (WITH NUXT SCRAPER) 🌟
+# 🌟 CLEAN & FAST BATCH COMMAND (Ignores Playlist IDs) 🌟
 @app.on_message(filters.command("batch"))
 async def handle_batch(client, message: Message):
     raw_text = message.text.replace("/batch", "").strip()
@@ -330,50 +330,10 @@ async def handle_batch(client, message: Message):
 
     try:
         url = urls[0]
-        
-        # 🌟 SCENARIO 1: HANIME CUSTOM PLAYLISTS & CHANNELS 🌟
-        if "hanime.tv" in url and ("playlist_id=" in url or "/channels/" in url or "/playlists/" in url):
-            await status.edit_text("⏳ **Bypassing Plugin... Deep Scanning Website Data...** 🕵️‍♂️")
-            
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/114.0.0.0 Safari/537.36'}
-            r = requests.get(url, headers=headers)
-            
-            # 🧠 THE NUXT HACK: Extracting hidden name and slug pairs from raw HTML
-            groups_dict = {}
-            matches = re.findall(r'"name":"([^"]+)"\s*,\s*"slug":"([a-z0-9\-]+)"', r.text)
-            
-            for title, slug in matches:
-                # Filter out obvious tags/brands (Video slugs usually have hyphens or numbers)
-                if len(slug) < 4 or ("-" not in slug and not any(char.isdigit() for char in slug)): 
-                    continue
-                    
-                ep_url = f"https://hanime.tv/videos/hentai/{slug}"
-                base_match = re.match(r'^(.*?)(?:-\d+)?$', slug)
-                base_slug = base_match.group(1) if base_match else slug
-                
-                if base_slug not in groups_dict:
-                    clean_title = re.sub(r'\s*\d+$', '', title).strip()
-                    groups_dict[base_slug] = {'title': clean_title, 'episodes': []}
-                    
-                if not any(e['url'] == ep_url for e in groups_dict[base_slug]['episodes']):
-                    groups_dict[base_slug]['episodes'].append({'url': ep_url, 'title': title})
 
-            groups_list = list(groups_dict.values())
-            
-            if groups_list:
-                if len(groups_list) > 60: groups_list = groups_list[:60] # UI limit to prevent Telegram crash
-                task_id = str(uuid.uuid4())[:8]
-                PENDING_TASKS[task_id] = {
-                    "type": "playlist_selection", "site": "generic", 
-                    "groups": groups_list, "selected": list(range(len(groups_list))), "original_msg": message
-                }
-                await render_playlist_keyboard(status, task_id)
-            else:
-                await status.edit_text("❌ **No videos found in this Playlist/Channel.**\n(Shayad ye private hai ya galat link hai).")
-            return
-
-        # 🌟 SCENARIO 2: NORMAL HANIME NATIVE SERIES 🌟
-        elif len(urls) == 1 and "hanime.tv" in url:
+        # 🌟 SCENARIO 1: NORMAL HANIME NATIVE SERIES 🌟
+        # Ye '?' ke baad ka sab kuch (playlist_id waghera) ignore kar dega
+        if len(urls) == 1 and "hanime.tv" in url:
             slug = url.split('/hentai/')[-1].split('?')[0]
             api_url = f"https://hanime.tv/api/v8/video?id={slug}"
             r = requests.get(api_url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -386,8 +346,11 @@ async def handle_batch(client, message: Message):
                     reply_markup=get_quality_keyboard(task_id, [1080, 720, 480, 360])
                 )
                 return
+            else:
+                await status.edit_text("❌ **API ne response nahi diya ya link galat hai.**")
+                return
 
-        # 🌟 SCENARIO 3: OTHER SITES (HSTREAM, YOUTUBE, ETC) 🌟
+        # 🌟 SCENARIO 2: OTHER SITES (HSTREAM, YOUTUBE, MULTI-LINKS) 🌟
         episodes_to_download = []
         if len(urls) > 1:
             for idx, u in enumerate(urls): episodes_to_download.append({'url': u, 'title': f"Episode {idx+1}"})
