@@ -2,6 +2,6 @@ pycryptodomex
 pyrogram
 tgcrypto
 requests
-yt-dlp
+yt-dlp>=2025.01.15
 motor
 hanime-plugin
