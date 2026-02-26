@@ -53,7 +53,7 @@ BOT_TOKEN = "8798570619:AAE0Bz4umU7JMDn61AcssHwntSRyjNjzu-Q"
 DUMP_CHAT_ID = -1003831827071
 
 # 👇 Aapka MongoDB Setup 👇
-MONGO_URL = "mongodb+srv://salonisingh6265_db_user:U50ONNZZFUbh0iQI@cluster0.41mb27f.mongodb.net/?appName=Cluster0"
+MONGO_URL = "mongodb+srv://gauravsingh576466_db_user:mOuhQVApEQVMpeYr@cluster0.d94qqiv.mongodb.net/BotDatabase?retryWrites=true&w=majority&appName=Cluster0"
 mongo_client = AsyncIOMotorClient(MONGO_URL)
 db = mongo_client["UniversalBotDB"]
 file_cache = db["VideoCacheFiles"]
