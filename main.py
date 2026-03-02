@@ -303,10 +303,35 @@ async def start(client, message):
         "✨ **Universal Extractor Bot is Live!**\n\n"
         "**Commands for Groups & PM:**\n"
         "👉 Send any link directly (or use `/dl <link>` in groups).\n"
-        "👉 Use `/batch <link>` for Series."
+        "👉 Use `/batch <link>` for Series.\n"
+        "👉 Use `/ytdlleech <link>` for normal yt-dlp sites (YouTube, Insta, etc.)."
     )
 
-@app.on_message((filters.text | filters.command("dl")) & ~filters.command(["start", "batch"]))
+@app.on_message(filters.command("ytdlleech"))
+async def handle_ytdlleech(client, message: Message):
+    if len(message.command) < 2: 
+        return await message.reply_text("❌ **Format:** `/ytdlleech <link>`")
+    
+    url = message.text.split(maxsplit=1)[1].strip()
+    if not url.startswith("http"): 
+        return await message.reply_text("❌ **Invalid Link!** Please send a valid HTTP link.")
+        
+    status = await message.reply_text("⏳ **Analyzing Link with yt-dlp...** 🕵️‍♂️")
+    
+    # is_generic=True ensures it extracts native yt-dlp formats
+    title, vid_url, thumb, duration, qualities = get_video_info(url, is_generic=True)
+    
+    if title:
+        task_id = str(uuid.uuid4())[:8]
+        PENDING_TASKS[task_id] = {
+            "type": "single", "url": url, "title": title, "thumb": thumb, 
+            "duration": duration, "original_msg": message, "user_id": get_user_id(message)
+        }
+        await status.edit_text(f"🎬 **{title[:50]}...**\n\n✅ **yt-dlp Supported!** Kaunsi Quality chahiye? 👇", reply_markup=get_quality_keyboard(task_id, qualities))
+    else: 
+        await status.edit_text("❌ **Extraction Failed.**\nLink shayad private hai ya yt-dlp support nahi karta.")
+
+@app.on_message((filters.text | filters.command("dl")) & ~filters.command(["start", "batch", "ytdlleech"]))
 async def handle_message(client, message: Message):
     if message.command and message.command[0] == "dl":
         if len(message.command) < 2: 
