@@ -4,4 +4,4 @@ tgcrypto
 requests
 yt-dlp>=2026.02.21
 motor
-hanime-plugin
+git+https://github.com/AYUSHSINGH9988/Ayu-hanime-plugin.git
