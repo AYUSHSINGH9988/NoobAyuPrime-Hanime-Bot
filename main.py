@@ -630,7 +630,7 @@ async def handle_message(client, message: Message):
         await status.edit_text(f"🎬 **{title[:50]}...**\n\n✅ **Aggregated Sources!** Kaunsi Quality chahiye? 👇", reply_markup=get_quality_keyboard(task_id, qualities))
     else: await status.edit_text("❌ **Extraction Failed.**")
 
-==========================================
+# ==========================================
 # 🎛️ SECURE CALLBACK HANDLER
 # ==========================================
 @app.on_callback_query(filters.regex(r"^q_(\d+)_(.+)$"))
